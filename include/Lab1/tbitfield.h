@@ -5,6 +5,8 @@
 //
 // Битовое поле
 
+#pragma once
+
 #include <iostream>
 
 typedef unsigned int TELEM;
