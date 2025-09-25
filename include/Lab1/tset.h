@@ -5,6 +5,8 @@
 //
 // Множество
 
+#pragma once
+
 #include "tbitfield.h"
 
 class TSet
