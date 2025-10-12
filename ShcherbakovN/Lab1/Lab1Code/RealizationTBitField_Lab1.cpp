@@ -166,41 +166,9 @@ TBitField TBitField::operator&(const TBitField& bf)
 	int i;
 	for (i = 0; i < (LongBF.MemLen - ShortBF.MemLen); ++i)
 	{
-		res.pMem[i] = LongBF.pMem[i]; //ѕереписываем байты, которых нет в меньшем битовом поле, в итоговое битовое поле.
+		res.pMem[i] = 0; //»нициализируем в итоговом битовом поле те байты нул€ми, которых нет в меньшем битовом поле.
 	}
 	int j = 0;
-	if (i < LongBF.MemLen)
-	{
-		int elem_longBF = LongBF.MemLen - 1 - i; //Ќомер элемента в pMem более длинного битового пол€, который сравниваетс€ с "неполным" элементом (у которого меньше битов, чем должно быть) более короткого битового пол€.
-		int elem_shortBF = ShortBF.MemLen - 1; //Ќомер элемента в pMem более короткого битового пол€, который €вл€етс€ "неполным" элементом. (Ќапример (std::numeric_limits<TELEM>::digits = 32), если элемент состоит из 32 - полный, а если элемент состоит из 14 бит - неполный).
-		int bit_longBF = -1, bit_shortBF = -1;
-		int ind_bit_longBF = -1, ind_bit_shortBF = -1;
-		const int bit_in_elem = std::numeric_limits<TELEM>::digits; //std::numeric_limits<TELEM>::digits (јнналогично sizeof(TELEM)*8).
-		for (int k = 0; k < bit_in_elem && ind_bit_longBF < MaxBitLen - 1; ++k) //k - смещение по битам в элементе. //(ind_bit_longBF < MaxBitLen - 1) - провер€ем, не пытаемс€ ли мы обратитьс€ к несуществующему биту.
-		{
-			ind_bit_longBF = (bit_in_elem * elem_longBF) + k; //Ќомер соотвествующего бита в более длинном битовом поле.
-			ind_bit_shortBF = (bit_in_elem * elem_shortBF) + k; //Ќомер соотвествующего бита в более коротком битовом поле.
-			bit_longBF = LongBF.GetBit(ind_bit_longBF); //ѕолучаем биты в элементе более длинного битового пол€, который сравниваетс€ с "неполным" элементом более короткого битового пол€.
-			if (ind_bit_shortBF >= ShortBF.GetLength()) //ѕроверка на то, что обращаемс€ к битам с номерами, которых нет в битовом поле. (Ќапример, в битовом поле 10 бит, а мы обратимс€ к 10 по номеру биту(номера начинаютс€ с 0), который €вл€лс€ бы 11 битом)
-			{
-				bit_shortBF = 1; //ќбращаем в единицу, чтобы при побитовом » скопировать биты из более длинного битового пол€, а не помен€ть их.
-			}
-			else
-			{
-				bit_shortBF = ShortBF.GetBit(ind_bit_shortBF); //ѕолучаем биты в элементе более короткого битового пол€ ("неполный" элемент).
-			}
-			if ((bit_longBF & bit_shortBF) == 0) //ѕобитовое ».
-			{
-				res.ClrBit(ind_bit_longBF);
-			}
-			else
-			{
-				res.SetBit(ind_bit_longBF);
-			}
-		}
-		i++;
-		j++;
-	}
 	for (i, j; i < LongBF.MemLen; ++i, ++j)
 	{
 		res.pMem[i] = LongBF.pMem[i] & ShortBF.pMem[j]; //—равниваем побитовым » биты двух битовых полей.
