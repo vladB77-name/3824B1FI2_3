@@ -127,12 +127,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="tbitfield.h" />
-    <ClInclude Include="tset.h" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="tbitfield.cpp" />
     <ClCompile Include="tset.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\include\Lab1\tbitfield.h" />
+    <ClInclude Include="..\..\..\include\Lab1\tset.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

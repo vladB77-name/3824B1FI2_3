@@ -403,7 +403,7 @@ TEST(Test_TBitField2, Oper_OR_3) {
     TBitField field(0); //оба обекта имеют длину 0
     TBitField field2(0);
 
-    TBitField field3 = field | field2; //field: -, field2: 011
+    TBitField field3 = field | field2; 
     EXPECT_EQ(field3.GetLength(), 0);
 }
 ////////////
@@ -484,7 +484,7 @@ TEST(Test_TBitField2, Oper_denial_1) {
 TEST(Test_TBitField2, Oper_denial_2) {
     TBitField field(0);
     try {
-
+        TBitField field2 = ~field;
     }
     catch (const std::runtime_error& a) {
         EXPECT_STREQ(a.what(), "Error! The field length is 0");
@@ -492,7 +492,7 @@ TEST(Test_TBitField2, Oper_denial_2) {
 }
 /////////////
 //поток ввода
-TEST(Test_TBitField2, Oper_input) {
+TEST(Test_TBitField3, Oper_input) {
     TBitField field(3);
     std::istringstream in("110");
     in >> field;
@@ -525,7 +525,7 @@ TEST(Test_TBitField3, Oper_input_2) {
     }
 }
 
-TEST(Test_TBitField3, Oper_input_3) { //проблема: иногда выходит исключение, иногда нет (не знаю что делать)
+TEST(Test_TBitField3, Oper_input_3) { 
     TBitField field1(3);
     TBitField field2(3);
 
@@ -853,8 +853,8 @@ TEST(Test_Tset3, Oper_unification) {
     EXPECT_EQ(set3.IsMember(1), 1);
     EXPECT_EQ(set3.IsMember(2), 0);
 }
-/// !!!!!! проблема delete scalar. Когда писал тесты для методов по отдельности всё срабатывало
-TEST(Test_Tset3, Oper_unification_1) { //иногда срабатывает, иногда выходит исключение delete_scalar
+
+TEST(Test_Tset3, Oper_unification_1) { 
 
     TSet set(0);
 
@@ -865,7 +865,7 @@ TEST(Test_Tset3, Oper_unification_1) { //иногда срабатывает, иногда выходит искл
     EXPECT_EQ(set3.GetMaxPower(), 0);
 }
 
-TEST(Test_Tset3, Oper_unification_2) { //то же delete_scalar (иногда срабатывает, иногда выходит исключение)
+TEST(Test_Tset3, Oper_unification_2) { 
     TSet set(3);
     set.InsElem(0);
 
@@ -875,7 +875,7 @@ TEST(Test_Tset3, Oper_unification_2) { //то же delete_scalar (иногда срабатывает
     EXPECT_EQ(set2.IsMember(2), 0);
 }
 
-TEST(Test_Tset3, Oper_unification_3) { //delete scalar (иногда срабатывает, иногда выходит исключение)
+TEST(Test_Tset3, Oper_unification_3) { 
 
     TSet set(1);
 
@@ -890,7 +890,7 @@ TEST(Test_Tset3, Oper_unification_3) { //delete scalar (иногда срабатывает, иног
 }
 ////////////
 
-TEST(Test_Tset3, Oper_intersection) { //то же самое delete scalar (иногда проходит, иногда нет)
+TEST(Test_Tset3, Oper_intersection) { 
     TSet set(4);
     set.InsElem(0);
 
@@ -920,8 +920,7 @@ TEST(Test_Tset3, Oper_intersection_2) {
     TSet set3 = set * set2;
     EXPECT_EQ(set3.GetMaxPower(), 0);
 }
-
-///////// delete scalar
+////////
 TEST(Test_Tset4, Oper_output) {
     TSet set(4);
     set.InsElem(0);
@@ -1031,7 +1030,7 @@ TEST(Test_Tset4, Oper_input_5) {
     }
 }
 
-TEST(Test_Tset4, Oper_input_6) { //delete scalar
+TEST(Test_Tset4, Oper_input_6) { 
     TSet set(4);
     std::istringstream in("0,,,2,3");
 
@@ -1044,7 +1043,7 @@ TEST(Test_Tset4, Oper_input_6) { //delete scalar
     }
 }
 
-TEST(Tset_Tset4, Oper_input_7) { //delete scalar
+TEST(Tset_Tset4, Oper_input_7) { 
     TSet set(4);
     std::istringstream in(",0,1");
     try {
@@ -1055,5 +1054,4 @@ TEST(Tset_Tset4, Oper_input_7) { //delete scalar
         EXPECT_STREQ(a.what(), "Error. Empty values between commas are not allowed");
     }
 }
-
 //////////

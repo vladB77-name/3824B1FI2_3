@@ -2,7 +2,11 @@
 #include <limits>
 #include <sstream> //для тестов ввода и вывода
 
-int TBitField::shiftSize() const { //const нужен, иначе в GetMemIndex возникает ошибка 
+int TBitField::GetMemIndex(const int n) const {  //индекс элемента pMem, в котором находится бит n
+	if (n < 0 || n >= BitLen) {
+		throw std::out_of_range("Error! Incorrect bit index");
+	}
+
 	int bitsInElem = std::numeric_limits<TELEM>::digits;  //сколько битов в типе TELEM 
 	int a = 1;
 	size_t count = 0;
@@ -10,15 +14,8 @@ int TBitField::shiftSize() const { //const нужен, иначе в GetMemIndex возникает 
 		a <<= 1;
 		++count;
 	}
-	return count;
-}
 
-int TBitField::GetMemIndex(const int n) const {  //индекс элемента pMem, в котором находится бит n
-	if (n < 0 || n >= BitLen) {
-		throw std::out_of_range("Error! Incorrect bit index");
-	}
-
-	return n >> shiftSize(); //32=2^5 ~ n/(sizeof(TELEM)*8)
+	return n >> count; //32=2^5 ~ n/(sizeof(TELEM)*8) 
 }
 
 TELEM TBitField::GetMemMask(const int n) const
@@ -216,7 +213,7 @@ TBitField TBitField::operator&(const TBitField& bf)
 	int new_len = (this->BitLen <= bf.BitLen ? this->BitLen : bf.BitLen); //выбираем наименьшую длину
 	TBitField new_field(new_len);
 
-	for (size_t i = 0; i < new_len; ++i) {
+	for (size_t i = 0; i < new_field.MemLen; ++i) {
 		new_field.pMem[i] = this->pMem[i] & bf.pMem[i];
 	}
 
