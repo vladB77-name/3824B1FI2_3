@@ -388,6 +388,23 @@ TEST(Test_TBitField2, Oper_OR_1) {
     EXPECT_EQ(field3.GetBit(1), 1);
 }
 
+TEST(Test_TBitField2, Oper_OR_1_1) {
+    TBitField field(35);
+    TBitField field2(2);
+    field.SetBit(0);
+    field.SetBit(34);
+
+    field2.SetBit(0);
+    field2.SetBit(1);
+    TBitField field3 = field | field2;
+    for (size_t i = 2; i < field3.GetLength()-1; ++i) {
+        EXPECT_EQ(field3.GetBit(i), 0);
+    }
+    EXPECT_EQ(field3.GetBit(0), 1); 
+    EXPECT_EQ(field3.GetBit(1), 1); 
+    EXPECT_EQ(field3.GetBit(34), 1); 
+}
+
 TEST(Test_TBitField2, Oper_OR_2) {
     TBitField field(0); //размер одного объекта равен 0
     TBitField field2(2);
@@ -430,10 +447,42 @@ TEST(Test_TBitField2, Oper_AND_1) {
     field2.SetBit(1);
 
     TBitField field3 = field & field2; //field: 011, field2: 11
-    EXPECT_EQ(field3.GetLength(), 2);
+    EXPECT_EQ(field3.GetLength(), 3);
     EXPECT_EQ(field3.GetBit(0), 1);
-    EXPECT_EQ(field3.GetBit(1), 1); //field3: 11
+    EXPECT_EQ(field3.GetBit(1), 1); //field3: 11 
 }
+
+TEST(Test_TBitField2, Oper_AND_1_1) {
+    TBitField field(2); //разная длина полей
+    TBitField field2(3);
+    field.SetBit(0);
+    
+    field2.SetBit(0);
+    field2.SetBit(2);
+
+    TBitField field3 = field & field2; //field: 01, field2: 101
+    EXPECT_EQ(field3.GetLength(), 3);
+    EXPECT_EQ(field3.GetBit(0), 1);
+    EXPECT_EQ(field3.GetBit(1), 0); //field3: 011 
+    EXPECT_EQ(field3.GetBit(2), 0);
+}
+
+TEST(Test_TBitField2, Oper_AND_1_2) {
+    TBitField field(35);
+    TBitField field2(2);
+    field.SetBit(0);
+    field.SetBit(34);
+
+    field2.SetBit(0);
+    TBitField field3 = field & field2; 
+    EXPECT_EQ(field3.GetLength(), 35);
+    for (size_t i = 1; i < field3.GetLength()-1; ++i) {
+        EXPECT_EQ(field3.GetBit(i), 0);
+    }
+    EXPECT_EQ(field3.GetBit(0), 1);
+    EXPECT_EQ(field3.GetBit(34), 0);
+}
+
 
 TEST(Test_TBitField2, Oper_AND_2) {
     TBitField field(0); //длина одного из полей равна 0

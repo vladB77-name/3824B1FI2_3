@@ -139,20 +139,7 @@ int TBitField::operator==(const TBitField& bf) const
 
 int TBitField::operator!=(const TBitField& bf) const
 {
-	if (BitLen != bf.BitLen) {
-		return 1;
-	}
-
-	if (this->pMem == nullptr && bf.pMem == nullptr) { //объекты равны
-		return 0;
-	}
-
-	for (size_t i = 0; i < bf.MemLen; ++i) {
-		if (this->pMem[i] != bf.pMem[i]) {
-			return 1;
-		}
-	}
-	return 0;
+	return !(*this==bf); 
 }
 
 TBitField& TBitField::operator=(const TBitField& bf)
@@ -209,15 +196,26 @@ TBitField TBitField::operator&(const TBitField& bf)
 		return *this;
 	}
 	//////
+	
+	int max_len = (this->BitLen >= bf.BitLen ? this->BitLen : bf.BitLen); 
+	TBitField new_field(max_len);
 
-	int new_len = (this->BitLen <= bf.BitLen ? this->BitLen : bf.BitLen); //выбираем наименьшую длину
-	TBitField new_field(new_len);
-
-	for (size_t i = 0; i < new_field.MemLen; ++i) {
+	int min_mem_len = (this->MemLen >= bf.MemLen ? bf.MemLen : this->MemLen);
+	for (size_t i = 0; i < min_mem_len; ++i) {
 		new_field.pMem[i] = this->pMem[i] & bf.pMem[i];
 	}
 
-	return new_field;
+	if (this->MemLen > bf.MemLen) {
+		for (size_t i = min_mem_len; i < this->MemLen; ++i) {
+			new_field.pMem[i] = 0;
+		}
+	}
+	else {
+		for (size_t i = min_mem_len; i < bf.MemLen; ++i) { 
+			new_field.pMem[i] = 0;
+		}
+	}
+	return new_field; 
 }
 
 TBitField TBitField::operator~(void) {
