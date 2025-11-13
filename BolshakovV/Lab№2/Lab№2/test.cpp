@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "../Project1/utmatrix.h"
+#include "../Project1/UTMATRIX.h"
 
 TEST(TVector_test_0, constructor_default) { //проверка установки значений по умолчанию
 	TVector<int> vec;
