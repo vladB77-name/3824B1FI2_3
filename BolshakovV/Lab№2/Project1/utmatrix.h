@@ -17,8 +17,8 @@ public:
 	TVector(int s = 10, int si = 0);
 	TVector(const TVector& v);                // конструктор копирования
 	~TVector();
-	int GetSize() { return Size; } // размер вектора
-	int GetStartIndex() { return StartIndex; } // индекс первого элемента
+	int GetSize() const { return Size; } // размер вектора
+	int GetStartIndex() const { return StartIndex; } // индекс первого элемента
 	ValType& operator[](int pos);             // доступ
 	bool operator==(const TVector& v) const;  // сравнение
 	bool operator!=(const TVector& v) const;  // сравнение
@@ -37,6 +37,13 @@ public:
 	// ввод-вывод
 
 	friend std::istream& operator>>(std::istream& in, TVector& v) {
+
+		////////
+		if (v.pVector == nullptr) {
+			throw std::runtime_error("An error occurred when creating an object");
+		}
+		////////
+
 		TVector<ValType>back(v);
 		try {
 			for (size_t i = 0; i < v.GetSize() - v.GetStartIndex(); ++i) {
@@ -55,6 +62,13 @@ public:
 		return in;
 	};
 	friend std::ostream& operator<<(std::ostream& out, const TVector& v) {
+
+		////////
+		if (v.pVector == nullptr) {
+			throw std::runtime_error("An error occurred when creating an object");
+		}
+		////////
+
 		ValType zero = {};
 
 		for (size_t i = 0; i < v.StartIndex; ++i) {
@@ -90,15 +104,22 @@ public:
 
 	// ввод / вывод
 	friend std::istream& operator>>(std::istream& in, TMatrix& mt) {
+
+		/////
+		if (mt.GetSize()== -1) {  //чтобы избежать вызовов конструктора копирования и оператора присваивания
+			throw std::runtime_error("An error occurred when creating an object");
+		}
+		/////
+
 		TMatrix<ValType>mat_copy(mt);
 
 		for (size_t i = 0; i < mt.Size; ++i) {
 			try {
-				in >> mt.pVector[i];
+				in >> mt[i];
 			}
 			catch (...) {
 				mt = mat_copy;
-				throw std::invalid_argument("Incorrect input");
+				throw;
 			}
 
 		}
@@ -106,6 +127,13 @@ public:
 		return in;
 	};
 	friend std::ostream& operator<<(std::ostream& out, const TMatrix& mt) {
+
+		//////
+		if (mt.GetSize() == -1) {
+			throw std::runtime_error("An error occurred when creating an object");
+		}
+		//////
+
 		for (size_t i = 0; i < mt.Size; ++i) {
 			out << mt.pVector[i] << "\n";
 		}
@@ -116,17 +144,27 @@ public:
 //////////класс TVector
 
 template<class ValType> //конструктор
-TVector<ValType>::TVector(int s, int si) : Size(s), StartIndex(si)
+TVector<ValType>::TVector(int s, int si)
 {
-	if (s <= 0 || s > MAX_VECTOR_SIZE) {
-		throw std::invalid_argument("Error. Incorrect size");
-	}
+	try {
+		if (s <= 0 || s > MAX_VECTOR_SIZE) {
+			throw std::invalid_argument("Error. Incorrect size");
+		}
 
-	if (si < 0 || si >= s) {
-		throw std::invalid_argument("Error. Incorrect start_index");
-	}
+		if (si < 0 || si >= s) {
+			throw std::invalid_argument("Error. Incorrect start_index");
+		}
 
-	this->pVector = new ValType[s - si]();
+		this->Size = s;
+		this->StartIndex = si;
+		this->pVector = new ValType[s - si]();
+	}
+	catch (...) {
+		this->Size = -1;
+		this->StartIndex = -1;
+		this->pVector = nullptr;
+		throw;
+	}
 }
 
 template<class ValType> //конструктор копирования
@@ -134,10 +172,16 @@ TVector<ValType>::TVector(const TVector& v)
 {
 	this->Size = v.Size;
 	this->StartIndex = v.StartIndex;
-	this->pVector = new ValType[v.Size - v.StartIndex];
 
-	for (size_t i = 0; i < v.Size - v.StartIndex; ++i) {
-		this->pVector[i] = v.pVector[i];
+	if (v.pVector == nullptr) { //если бросить исключение, то значения не будут переданы текущему объекту
+		this->pVector = nullptr;
+	}
+	else {
+		this->pVector = new ValType[v.Size - v.StartIndex];
+
+		for (size_t i = 0; i < v.Size - v.StartIndex; ++i) {
+			this->pVector[i] = v.pVector[i];
+		}
 	}
 }
 
@@ -151,6 +195,12 @@ TVector<ValType>::~TVector() //деструктор
 template<class ValType>
 ValType& TVector<ValType>::operator[](int pos)//доступ
 {
+	//////////
+	if (this->pVector == nullptr) {
+		throw std::runtime_error("An error occurred when creating an object"); 
+	}
+	/////////
+
 	if (pos < this->StartIndex || pos >= this->Size) {
 		throw std::out_of_range("Incorrect index");
 	}
@@ -161,6 +211,13 @@ ValType& TVector<ValType>::operator[](int pos)//доступ
 template<class ValType>
 bool TVector<ValType>::operator==(const TVector& v) const //сравнение
 {
+
+	/////////
+	if (this->pVector == nullptr || v.pVector == nullptr) {
+		throw std::runtime_error("An error occurred when creating an object (object number 1 or object number 2)");
+	}
+	////////
+
 	if (this->Size != v.Size) {
 		return false;
 	}
@@ -203,27 +260,33 @@ bool TVector<ValType>::operator!=(const TVector& v) const //сравнение
 template<class ValType>
 TVector<ValType>& TVector<ValType>::operator=(const TVector& v) //присваивание
 {
+	/////////
+	if (v.pVector == nullptr) {
+		throw std::runtime_error("An error occurred when creating an object (object number 2)");
+	}
+	/////////
+
 	if (this == &v) {
 		return *this;
 	}
-	if (this->Size != v.Size) {
-		ValType* p = new ValType[v.Size - v.StartIndex];
-		delete[] this->pVector;
-		this->pVector = p;
-		p = nullptr;
-		this->Size = v.Size;
-	}
-	this->StartIndex = v.StartIndex;
+	
+	TVector<ValType>vec(v);
+	std::swap(this->Size, vec.Size);
+	std::swap(this->StartIndex, vec.StartIndex);
+	std::swap(this->pVector, vec.pVector); 
 
-	for (size_t i = 0; i < v.Size - v.StartIndex; ++i) {
-		this->pVector[i] = v.pVector[i];
-	}
 	return *this;
 }
 
 template<class ValType>
 TVector<ValType> TVector<ValType>::operator+(const ValType& val) //прибавить скаляр
 {
+	////////
+	if (this->pVector == nullptr) {
+		throw std::runtime_error("An error occurred when creating an object");
+	}
+	////////
+
 	TVector<ValType> tvec(this->Size, this->StartIndex);
 	for (size_t i = 0; i < this->Size - this->StartIndex; ++i) {
 		tvec.pVector[i] = this->pVector[i] + val;
@@ -234,6 +297,12 @@ TVector<ValType> TVector<ValType>::operator+(const ValType& val) //прибавить ска
 template<class ValType>
 TVector<ValType> TVector<ValType>::operator-(const ValType& val) //вычесть скаляр
 {
+	////////
+	if (this->pVector == nullptr) {
+		throw std::runtime_error("An error occurred when creating an object");
+	}
+	////////
+
 	TVector<ValType> tvec(this->Size, this->StartIndex);
 	for (size_t i = 0; i < this->Size - this->StartIndex; ++i) {
 		tvec.pVector[i] = this->pVector[i] - val;
@@ -244,6 +313,12 @@ TVector<ValType> TVector<ValType>::operator-(const ValType& val) //вычесть скаля
 template<class ValType>
 TVector<ValType> TVector<ValType>::operator*(const ValType& val) //умножить на скаляр
 {
+	////////
+	if (this->pVector == nullptr) {
+		throw std::runtime_error("An error occurred when creating an object");
+	}
+	////////
+
 	TVector<ValType> tvec(this->Size, this->StartIndex);
 	for (size_t i = 0; i < this->Size - this->StartIndex; ++i) {
 		tvec.pVector[i] = this->pVector[i] * val;
@@ -254,6 +329,12 @@ TVector<ValType> TVector<ValType>::operator*(const ValType& val) //умножить на с
 template<class ValType>
 TVector<ValType> TVector<ValType>::operator+(const TVector& v) //сложение
 {
+	/////////
+	if (this->pVector == nullptr || v.pVector == nullptr) {
+		throw std::runtime_error("An error occurred when creating an object (object number 1 or object number 2)");
+	}
+	////////
+
 	if (this->Size != v.Size) {
 		throw std::runtime_error("The vectors have different sizes");
 	}
@@ -285,6 +366,12 @@ TVector<ValType> TVector<ValType>::operator+(const TVector& v) //сложение
 template<class ValType>
 TVector<ValType> TVector<ValType>::operator-(const TVector& v) //вычитание
 {
+	/////////
+	if (this->pVector == nullptr || v.pVector == nullptr) {
+		throw std::runtime_error("An error occurred when creating an object (object number 1 or object number 2)");
+	}
+	////////
+
 	if (this->Size != v.Size) {
 		throw std::runtime_error("The vectors have different sizes");
 	}
@@ -319,6 +406,12 @@ TVector<ValType> TVector<ValType>::operator-(const TVector& v) //вычитание
 template<class ValType>
 ValType TVector<ValType>::operator*(const TVector& v) //скалярное произведение
 {
+	/////////
+	if (this->pVector == nullptr || v.pVector == nullptr) {
+		throw std::runtime_error("An error occurred when creating an object (object number 1 or object number 2)");
+	}
+	////////
+
 	if (this->Size != v.Size) {
 		throw std::runtime_error("The vectors have different sizes"); 
 	}
@@ -337,67 +430,73 @@ ValType TVector<ValType>::operator*(const TVector& v) //скалярное произведение
 //класс TMatrix
 template<class ValType>
 TMatrix<ValType>::TMatrix(int s) :TVector<TVector<ValType>>(s, 0) {
-	if (s <= 0 || s > MAX_MATRIX_SIZE) {
-		throw std::invalid_argument("Invalid matrix size");
-	}
 
-	for (size_t i = 0; i < s; ++i) {
-		this->pVector[i] = TVector<ValType>(s, i);
+	try {
+		if (s > MAX_MATRIX_SIZE) {
+			throw std::invalid_argument("Invalid matrix size");
+		}
+
+		for (size_t i = 0; i < s; ++i) {
+			(*this)[i] = TVector<ValType>(s, i); 
+		}
+	}
+	catch (...) {
+		throw; //значения по умолчанию устанавливаются в конструкторе класса TVector
 	}
 
 }
 template<class ValType>
-TMatrix<ValType>::TMatrix(const TMatrix& mt) :TVector<TVector<ValType>>(mt.Size) {// копирование  
+TMatrix<ValType>::TMatrix(const TMatrix& mt) :TVector<TVector<ValType>>(mt) {}// копирование  
 
-	for (size_t i = 0; i < mt.Size; ++i) {
-		this->pVector[i] = mt.pVector[i];
-	}
-}
 template<class ValType>
 TMatrix<ValType>::TMatrix(const TVector<TVector<ValType>>& mt) {// преобразование типа 
 
-	TVector<TVector<ValType>>& non_const_mt = const_cast<TVector<TVector<ValType>>&>(mt);
+	try {
+		///////
+		if (mt.GetSize() == -1) {
+			throw std::runtime_error("An error occurred when creating an object (object number 2)");
+		}
+		///////
 
-	int size = non_const_mt.GetSize();
+		TVector<TVector<ValType>>& non_const_mt = const_cast<TVector<TVector<ValType>>&>(mt);
 
-	if (size > MAX_MATRIX_SIZE) {
-		throw std::invalid_argument("Invalid matrix size");
-	}
+		int size = non_const_mt.GetSize();
 
-	if (non_const_mt.GetStartIndex() != 0) {
-		throw std::invalid_argument("Error. The starting index of the vector of vectors should be 0");
-	}
+		if (size > MAX_MATRIX_SIZE) {
+			throw std::invalid_argument("Invalid matrix size");
+		}
 
-	for (int i = 0; i < size; ++i) {
-		if (non_const_mt[i].GetStartIndex() != i) {
-			throw std::runtime_error("Matching of the starting indexes");
+		if (non_const_mt.GetStartIndex() != 0) {
+			throw std::invalid_argument("Error. The starting index of the vector of vectors should be 0");
+		}
+
+		for (int i = 0; i < size; ++i) {
+			if (non_const_mt[i].GetStartIndex() != i) {
+				throw std::runtime_error("Matching of the starting indexes");
+			}
+		}
+
+		TVector<ValType>* pMat = new TVector<ValType>[size];
+		this->pVector = pMat;
+		pMat = nullptr;
+		this->Size = size;
+
+		for (size_t i = 0; i < size; ++i) {
+			this->pVector[i] = non_const_mt[i];
 		}
 	}
-
-	TVector<ValType>* pMat = new TVector<ValType>[size];
-	this->pVector = pMat;
-	pMat = nullptr;
-	this->Size = size;
-
-	for (size_t i = 0; i < size; ++i) {
-		this->pVector[i] = non_const_mt[i];
+	catch (...) {
+		this->Size = -1;
+		this->StartIndex = -1;
+		this->pVector = nullptr; 
+		throw;
 	}
 
 }
 template<class ValType>
 bool TMatrix<ValType>::operator==(const TMatrix& mt) const
 {
-	if (this->Size != mt.Size) {
-		return false;
-	}
-
-	for (size_t i = 0; i < this->Size; ++i) {
-		if (this->pVector[i] != mt.pVector[i]) {
-			return false;
-		}
-	}
-
-	return true;
+	return TVector<TVector<ValType>>::operator==(mt); 
 }
 
 template<class ValType>
@@ -409,21 +508,7 @@ bool TMatrix<ValType>::operator!=(const TMatrix& mt) const //сравнение
 template<class ValType>
 TMatrix<ValType>& TMatrix<ValType>::operator=(const TMatrix& mt)//присваивание
 {
-	if (this == &mt) {
-		return *this;
-	}
-
-	if (this->Size != mt.Size) {
-		TVector<ValType>* pMat = new TVector<ValType>[mt.Size];
-		delete[] this->pVector;
-		this->pVector = pMat;
-		pMat = nullptr;
-		this->Size = mt.Size;
-	}
-
-	for (size_t i = 0; i < mt.Size; ++i) {
-		this->pVector[i] = mt.pVector[i];
-	}
+	TVector<TVector<ValType>>::operator=(mt);
 
 	return *this;
 }
@@ -431,6 +516,12 @@ TMatrix<ValType>& TMatrix<ValType>::operator=(const TMatrix& mt)//присваивание
 template<class ValType>
 TMatrix<ValType> TMatrix<ValType>::operator+(const TMatrix& mt)//сложение
 {
+	///////
+	if (this->pVector == nullptr || mt.GetSize() == -1) {
+		throw std::runtime_error("An error occurred when creating an object (object number 1 or object number 2)");
+	}
+	///////
+
 	if (this->Size != mt.Size) {
 		throw std::runtime_error("Different sizes of matrices");
 	}
@@ -446,6 +537,12 @@ TMatrix<ValType> TMatrix<ValType>::operator+(const TMatrix& mt)//сложение
 template<class ValType>
 TMatrix<ValType> TMatrix<ValType>::operator-(const TMatrix& mt)//вычитание
 {
+	///////
+	if (this->pVector == nullptr || mt.GetSize() == -1) {
+		throw std::runtime_error("An error occurred when creating an object (object number 1 or object number 2)");
+	}
+	///////
+
 	if (this->Size != mt.Size) {
 		throw std::runtime_error("Different sizes of matrices");
 	}
