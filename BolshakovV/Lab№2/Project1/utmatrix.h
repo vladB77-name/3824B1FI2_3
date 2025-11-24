@@ -460,30 +460,21 @@ TMatrix<ValType>::TMatrix(const TVector<TVector<ValType>>& mt) {// преобразовани
 
 		TVector<TVector<ValType>>& non_const_mt = const_cast<TVector<TVector<ValType>>&>(mt);
 
-		int size = non_const_mt.GetSize();
-
-		if (size > MAX_MATRIX_SIZE) {
+		if (mt.GetSize() > MAX_MATRIX_SIZE) {
 			throw std::invalid_argument("Invalid matrix size");
 		}
 
-		if (non_const_mt.GetStartIndex() != 0) {
+		if (mt.GetStartIndex() != 0) {
 			throw std::invalid_argument("Error. The starting index of the vector of vectors should be 0");
 		}
 
-		for (int i = 0; i < size; ++i) {
-			if (non_const_mt[i].GetStartIndex() != i) {
+		for (int i = 0; i < mt.GetSize(); ++i) {
+			if (non_const_mt[i].GetStartIndex() != i) { 
 				throw std::runtime_error("Matching of the starting indexes");
 			}
 		}
 
-		TVector<ValType>* pMat = new TVector<ValType>[size];
-		this->pVector = pMat;
-		pMat = nullptr;
-		this->Size = size;
-
-		for (size_t i = 0; i < size; ++i) {
-			this->pVector[i] = non_const_mt[i];
-		}
+		TVector<TVector<ValType>>::operator=(mt);
 	}
 	catch (...) {
 		this->Size = -1;
@@ -502,7 +493,7 @@ bool TMatrix<ValType>::operator==(const TMatrix& mt) const
 template<class ValType>
 bool TMatrix<ValType>::operator!=(const TMatrix& mt) const //сравнение
 {
-	return !((*this) == mt);
+	return TVector<TVector<ValType>>::operator!=(mt);
 }
 
 template<class ValType>
@@ -517,7 +508,7 @@ template<class ValType>
 TMatrix<ValType> TMatrix<ValType>::operator+(const TMatrix& mt)//сложение
 {
 	///////
-	if (this->pVector == nullptr || mt.GetSize() == -1) {
+	if (this->pVector == nullptr || mt.GetSize() == -1) { //исключение выбрасывается в операторе базового класса, но если один объект создан корректно, то выйдет сообщение о разных размерах 
 		throw std::runtime_error("An error occurred when creating an object (object number 1 or object number 2)");
 	}
 	///////
@@ -526,12 +517,7 @@ TMatrix<ValType> TMatrix<ValType>::operator+(const TMatrix& mt)//сложение
 		throw std::runtime_error("Different sizes of matrices");
 	}
 
-	TMatrix<ValType>mat(this->Size);
-	for (size_t i = 0; i < this->Size; ++i) {
-		mat.pVector[i] = this->pVector[i] + mt.pVector[i];
-	}
-
-	return mat;
+	return TVector<TVector<ValType>>::operator+(mt);
 }
 
 template<class ValType>
@@ -547,11 +533,6 @@ TMatrix<ValType> TMatrix<ValType>::operator-(const TMatrix& mt)//вычитание
 		throw std::runtime_error("Different sizes of matrices");
 	}
 
-	TMatrix<ValType>mat(this->Size);
-	for (size_t i = 0; i < this->Size; ++i) {
-		mat.pVector[i] = this->pVector[i] - mt.pVector[i];
-	}
-
-	return mat;
+	return TVector<TVector<ValType>>::operator-(mt);
 }
 
